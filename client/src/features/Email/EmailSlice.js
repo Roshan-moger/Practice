@@ -1,18 +1,28 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
+// Thunk to fetch emails
 export const fetchEmails = createAsyncThunk(
   'emails/fetchEmails',
   async () => {
     const response = await axios.get('http://localhost:5000/api/emails/subjects');
-    return response.data;
+    return response.data; // Expecting array of email objects from backend
+  }
+);
+
+// Thunk to mark an email as read
+export const markEmailAsReadAsync = createAsyncThunk(
+  'emails/markAsReadAsync',
+  async (emailId) => {
+    const response = await axios.put(`http://localhost:5000/api/emails/${emailId}/read`);
+    return response.data; // Updated email object from backend
   }
 );
 
 const emailSlice = createSlice({
   name: 'emails',
   initialState: {
-    data: [],        // email array with { ...email, read: false }
+    data: [],        // Array of emails
     loading: false,
     error: null,
   },
@@ -33,15 +43,14 @@ const emailSlice = createSlice({
       .addCase(fetchEmails.fulfilled, (state, action) => {
         state.loading = false;
 
-        // Add new emails only if not already present (by _id)
         const newEmails = action.payload.filter((newEmail) => {
           return !state.data.some((existingEmail) => existingEmail._id === newEmail._id);
         });
 
-        // Add read: false to new emails
+        // 🛠️ Preserve original `read` value from backend
         const enrichedEmails = newEmails.map((email) => ({
           ...email,
-          read: false,
+          read: email.read ?? false,
         }));
 
         state.data = [...state.data, ...enrichedEmails];
@@ -49,6 +58,13 @@ const emailSlice = createSlice({
       .addCase(fetchEmails.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+      })
+      .addCase(markEmailAsReadAsync.fulfilled, (state, action) => {
+        const updated = action.payload;
+        const idx = state.data.findIndex(e => e._id === updated._id);
+        if (idx !== -1) {
+          state.data[idx] = updated;
+        }
       });
   },
 });

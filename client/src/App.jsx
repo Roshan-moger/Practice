@@ -2,14 +2,32 @@ import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import { jwtDecode } from 'jwt-decode';
-import Dashboard from './pages/DashBoard';
+import Dashboard from './pages/Dashboard';
 import API from './Components/utils/api';
 import Inbox from './Components/Inbox';
 import MainPage from './Components/MainPage';
+import { useDispatch } from 'react-redux';
+import { fetchEmails } from './features/Email/EmailSlice';
 
 
 const App = () => {
   const [user, setUser] = useState(null);
+
+
+  // Email Count
+
+    const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchEmails());
+
+    const interval = setInterval(() => {
+      dispatch(fetchEmails());
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [dispatch]);
+
 
   // Restore user on refresh
   useEffect(() => {

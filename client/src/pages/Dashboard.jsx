@@ -7,10 +7,9 @@ const Dashboard = ({ user, onLogout }) => {
     localStorage.removeItem('token');
     onLogout();
   };
-const emails = useSelector((state) => state.emails.data);
-  const readIds = useSelector((state) => state.emails.readIds);
-
-  const unreadCount = emails.filter((email) => !readIds.includes(email._id)).length;
+const unreadCount = useSelector((state) =>
+  state.emails.data.filter(email => !email.read).length
+);
   return (
     <>
       {/* Sidebar Toggle Button for Mobile */}

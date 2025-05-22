@@ -1,31 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchEmails } from '../features/Email/EmailSlice';
+import { fetchEmails, markEmailAsReadAsync } from '../features/Email/EmailSlice';
 
 const Inbox = () => {
   const dispatch = useDispatch();
   const { data: emails, loading, error } = useSelector((state) => state.emails);
 
-  const [readIds, setReadIds] = useState([]);
 
-  // Fetch emails and poll every 10 seconds
-  useEffect(() => {
-    dispatch(fetchEmails());
-    const interval = setInterval(() => {
-      dispatch(fetchEmails());
-    }, 10000);
-    return () => clearInterval(interval);
-  }, [dispatch]);
 
-  // Count unread
-  const unreadCount = emails.filter(email => !readIds.includes(email._id)).length;
+  // Count unread directly from Redux data
+const unreadCount = emails.filter(e => !e.read).length;
 
   // Handle marking email as read
-  const handleMarkAsRead = (id) => {
-    if (!readIds.includes(id)) {
-      setReadIds([...readIds, id]);
-    }
-  };
+const handleMarkAsRead = (id) => {
+  dispatch(markEmailAsReadAsync(id));
+};
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -45,26 +34,23 @@ const Inbox = () => {
         <ul className="space-y-3">
           {[...emails]
             .sort((a, b) => new Date(b.date) - new Date(a.date))
-            .map((email) => {
-              const isRead = readIds.includes(email._id);
-              return (
-                <li
-                  key={email._id}
-                  onClick={() => handleMarkAsRead(email._id)}
-                  className={`p-3 border rounded shadow-sm cursor-pointer ${
-                    isRead ? 'bg-white' : 'bg-gray-100'
-                  }`}
-                >
-                  <p className={`font-${isRead ? 'normal' : 'bold'}`}>{email.subject}</p>
-                  <p className="text-sm text-gray-600">{email.from}</p>
-                  <p className="text-xs text-gray-400">
-                    {new Date(email.date).toLocaleString('en-IN', {
-                      timeZone: 'Asia/Kolkata',
-                    })}
-                  </p>
-                </li>
-              );
-            })}
+            .map((email) => (
+              <li
+                key={email._id}
+                onClick={() => handleMarkAsRead(email._id)}
+                className={`p-3 border rounded shadow-sm cursor-pointer ${
+                  email.read ? 'bg-white' : 'bg-gray-100'
+                }`}
+              >
+                <p className={`font-${email.read ? 'normal' : 'bold'}`}>{email.subject}</p>
+                <p className="text-sm text-gray-600">{email.from}</p>
+                <p className="text-xs text-gray-400">
+                  {new Date(email.date).toLocaleString('en-IN', {
+                    timeZone: 'Asia/Kolkata',
+                  })}
+                </p>
+              </li>
+            ))}
         </ul>
       )}
     </div>

@@ -33,6 +33,8 @@ connectDB().then(() => {
 // Email Reader Function
 // ---------------------------
 function startEmailReader() {
+  console.log("📨 Email reader started...");
+
   const imap = new Imap({
     user: process.env.EMAIL_USER,
     password: process.env.EMAIL_PASS,
@@ -47,30 +49,34 @@ function startEmailReader() {
   }
 
   imap.once("ready", function () {
+    console.log("📥 IMAP ready");
+
     openInbox(function (err, box) {
       if (err) {
         console.error("❌ Open INBOX error:", err);
         return;
       }
 
-      const fetch = imap.seq.fetch(
-        `${Math.max(1, box.messages.total - 20)}:*`,
-        {
-          bodies: "",
-          struct: true,
-          markSeen: false,
-        }
-      );
 
-      fetch.on("message", function (msg) {
+      const fetch = imap.seq.fetch("1:*", {
+        bodies: "",
+        struct: true,
+        markSeen: false,
+      });
+
+      fetch.on("message", function (msg, seqno) {
+
         msg.on("body", function (stream) {
           simpleParser(stream, async (err, parsed) => {
             if (err) {
               console.error("❌ Email parse error:", err);
               return;
             }
-            // Inside your email parsing logic
+
+          
+
             const istDate = moment(parsed.date).tz("Asia/Kolkata").toDate();
+
             if (parsed.from?.text?.includes("alerts@axisbank.com")) {
               try {
                 const exists = await Email.findOne({ date: parsed.date });
@@ -79,7 +85,7 @@ function startEmailReader() {
                   const email = new Email({
                     subject: parsed.subject,
                     from: parsed.from.text,
-                    date: istDate, // Now stored in IST
+                    date: istDate,
                   });
 
                   await email.save();
@@ -93,6 +99,10 @@ function startEmailReader() {
             }
           });
         });
+      });
+
+      fetch.once("error", (err) => {
+        console.error("❌ Fetch error:", err);
       });
 
       fetch.once("end", function () {
@@ -112,3 +122,6 @@ function startEmailReader() {
 
   imap.connect();
 }
+
+
+

@@ -13,4 +13,23 @@ const subjects = await Email.find({}).sort({ date: -1 });
   }
 });
 
+router.put("/:id/read", async (req, res) => {
+  try {
+    const updatedEmail = await Email.findByIdAndUpdate(
+      req.params.id,
+      { read: true },
+      { new: true }
+    );
+
+    if (!updatedEmail) {
+      return res.status(404).json({ message: "Email not found" });
+    }
+
+    res.json(updatedEmail);
+  } catch (err) {
+    console.error("❌ Update error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 module.exports = router;
