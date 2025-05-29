@@ -22,9 +22,13 @@ export const markEmailAsReadAsync = createAsyncThunk(
 const emailSlice = createSlice({
   name: 'emails',
   initialState: {
-    data: [],        // Array of emails
+    data: [],
     loading: false,
     error: null,
+    selectedMonth: null,  // Format: "YYYY-MM"
+    availableMonths: [],  // <-- add this
+    saving: 0,
+  addedMonths: [],
   },
   reducers: {
     markAsRead: (state, action) => {
@@ -34,7 +38,19 @@ const emailSlice = createSlice({
         email.read = true;
       }
     },
+    setSelectedMonth: (state, action) => {
+      state.selectedMonth = action.payload;
+    },
+      addMonthlySaving: (state, action) => {
+    const { month, net } = action.payload;
+
+    if (!state.addedMonths.includes(month)) {
+      state.saving += net;
+      state.addedMonths.push(month);
+    }
   },
+  },
+
   extraReducers: (builder) => {
     builder
       .addCase(fetchEmails.pending, (state) => {
@@ -43,17 +59,34 @@ const emailSlice = createSlice({
       .addCase(fetchEmails.fulfilled, (state, action) => {
         state.loading = false;
 
-        const newEmails = action.payload.filter((newEmail) => {
-          return !state.data.some((existingEmail) => existingEmail._id === newEmail._id);
-        });
+        const newEmails = action.payload.filter((newEmail) =>
+          !state.data.some((existingEmail) => existingEmail._id === newEmail._id)
+        );
 
-        // 🛠️ Preserve original `read` value from backend
         const enrichedEmails = newEmails.map((email) => ({
           ...email,
           read: email.read ?? false,
         }));
 
         state.data = [...state.data, ...enrichedEmails];
+
+        // 🔥 Extract all unique months from emails
+        const monthsSet = new Set();
+        state.data.forEach(email => {
+          const date = new Date(email.date); // make sure `date` exists in email
+          if (!isNaN(date)) {
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            monthsSet.add(monthKey);
+          }
+        });
+
+        // Sort months descending (latest first)
+        state.availableMonths = Array.from(monthsSet).sort().reverse();
+
+        // Set default selectedMonth if not set
+        if (!state.selectedMonth && state.availableMonths.length > 0) {
+          state.selectedMonth = state.availableMonths[0];
+        }
       })
       .addCase(fetchEmails.rejected, (state, action) => {
         state.loading = false;
@@ -69,5 +102,5 @@ const emailSlice = createSlice({
   },
 });
 
-export const { markAsRead } = emailSlice.actions;
+export const { markAsRead, setSelectedMonth, addMonthlySaving } = emailSlice.actions;
 export default emailSlice.reducer;
