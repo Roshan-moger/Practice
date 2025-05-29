@@ -11,47 +11,54 @@ export const groupExpensesByWeek = (emails) => {
     const date = new Date(email.date);
     if (isNaN(amount) || isNaN(date)) return;
 
-    // Calculate start of the week (Monday)
+    // Start of week (Monday)
     const start = new Date(date);
     const day = start.getDay();
-    const diff = start.getDate() - day + (day === 0 ? -6 : 1); // adjust when Sunday
+    const diff = start.getDate() - day + (day === 0 ? -6 : 1);
     start.setDate(diff);
     start.setHours(0, 0, 0, 0);
 
-    // End of the week
     const end = new Date(start);
     end.setDate(start.getDate() + 6);
 
-    // Format label like "May 6–12"
+    const key = start.toISOString(); // for sorting
     const label = `${start.toLocaleString('default', { month: 'short' })} ${start.getDate()}–${end.getDate()}`;
 
-    weeks[label] = (weeks[label] || 0) + amount;
+    if (!weeks[key]) weeks[key] = { name: label, amount: 0 };
+    weeks[key].amount += amount;
   });
 
-  return Object.entries(weeks).map(([label, amount]) => ({
-    name: label,
-    amount,
-  }));
+  return (
+    Object.entries(weeks)
+      .sort(([a], [b]) => new Date(a) - new Date(b)) // sort by week start
+      .slice(-7) // last 7 weeks
+      .map(([, value]) => value)
+  );
 };
 
 export const groupExpensesByMonth = (emails) => {
   const months = {};
 
-  emails.forEach(email => {
+  emails.forEach((email) => {
     const subject = email.subject.toLowerCase();
     if (!subject.includes('debited')) return;
 
     const amount = parseFloat(subject.match(/\b\d+(?:\.\d{1,2})?\b/)?.[0]);
     const date = new Date(email.date);
+    if (isNaN(amount) || isNaN(date)) return;
 
-    if (!isNaN(amount)) {
-      const label = `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
-      months[label] = (months[label] || 0) + amount;
-    }
+    const key = `${date.getFullYear()}-${date.getMonth()}`; // e.g. 2024-4
+    const label = `${date.toLocaleString('default', { month: 'short' })} ${date.getFullYear()}`;
+
+    if (!months[key]) months[key] = { name: label, amount: 0 };
+    months[key].amount += amount;
   });
 
-  return Object.entries(months).map(([month, value]) => ({
-    name: month,
-    amount: value,
-  }));
+  return (
+    Object.entries(months)
+      .sort(([a], [b]) => new Date(a) - new Date(b)) // sort by month
+      .slice(-9) // last 9 months
+      .map(([, value]) => value)
+  );
 };
+
