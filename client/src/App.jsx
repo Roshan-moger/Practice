@@ -8,6 +8,7 @@ import Inbox from "./Components/Inbox";
 import MainPage from "./Components/MainPage";
 import { useDispatch } from "react-redux";
 import { fetchEmails } from "./features/Email/EmailSlice";
+import ManualTransactionForm from "./Components/ManualTransactionForm";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -76,6 +77,8 @@ const App = () => {
         >
           <Route index element={<MainPage  user={user}  />} /> {/* Default content */}
           <Route path="inbox" element={<Inbox />} />
+          <Route path="addExpense" element={<ManualTransactionForm />} />
+
         </Route>
       </Routes>
     </BrowserRouter>

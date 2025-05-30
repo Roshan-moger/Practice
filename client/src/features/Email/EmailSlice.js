@@ -29,6 +29,7 @@ const emailSlice = createSlice({
     availableMonths: [],  // <-- add this
     saving: 0,
   addedMonths: [],
+  
   },
   reducers: {
     markAsRead: (state, action) => {

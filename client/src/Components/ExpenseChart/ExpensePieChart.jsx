@@ -32,9 +32,9 @@ const ExpensePieChart = () => {
   ];
 
   return (
-    <div className="bg-white rounded shadow-md p-6 flex items-center justify-between mt-6">
+<div className="bg-white rounded shadow-md p-6 flex items-right justify-between mt-6">
       {/* Pie Chart with center savings */}
-      <div className="relative w-1/2">
+      <div className="relative w-3/4">
         <PieChart
           series={[
             {
@@ -64,16 +64,16 @@ const ExpensePieChart = () => {
       {/* Static Labels */}
       <div className="w-1/2 pl-6 space-y-3 text-sm">
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#00C49F' }} />
-          <span className="text-gray-700 font-medium">Total Income: ₹{totalIncome.toFixed(0)}</span>
+          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#00C49F' }} />
+          <span className="text-gray-700 font-medium"> Income: ₹{totalIncome.toFixed(0)}</span>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#FF6384' }} />
-          <span className="text-gray-700 font-medium">Total Expense: ₹{totalExpense.toFixed(0)}</span>
+          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#FF6384' }} />
+          <span className="text-gray-700 font-medium"> Expense: ₹{totalExpense.toFixed(0)}</span>
         </div>
         <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#FFCE56' }} />
-          <span className="text-gray-700 font-medium">Total Savings: ₹{totalSavings.toFixed(0)}</span>
+          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#FFCE56' }} />
+          <span className="text-gray-700 font-medium">Savings: ₹{totalSavings.toFixed(0)}</span>
         </div>
       </div>
     </div>

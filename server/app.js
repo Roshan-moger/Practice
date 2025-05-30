@@ -7,7 +7,6 @@ const { simpleParser } = require("mailparser");
 const Email = require("./models/Email");
 const connectDB = require("./config/db");
 const moment = require("moment-timezone"); // install this if not already: npm install moment-timezone
-
 dotenv.config();
 
 const app = express();
@@ -17,10 +16,14 @@ app.use(express.json());
 // Routes placeholder
 app.use('/api/auth', require('./routes/authRoutes'));
 
-
+// Email Fetching and Management
 app.use("/api/emails", require("./routes/emailRouters"));
 
-// Start server and connect DB
+// Manual Transactions
+
+app.use('/api/manualtransactions', require('./routes/manualTransactionRoutes'));
+
+
 connectDB().then(() => {
  setInterval(startEmailReader, 2000000);
 

@@ -16,12 +16,30 @@ const Inbox = () => {
   });
 
   // ✅ Delete email from UI only (persist to localStorage)
-  const handleDeleteUIOnly = (id) => {
-    const updatedIds = [...deletedIds, id];
-    setDeletedIds(updatedIds);
-    localStorage.setItem('deletedEmailIds', JSON.stringify(updatedIds));
-    toast.success('Email deleted from inbox view');
-  };
+const handleDeleteAndMarkRead = async (id) => {
+  await dispatch(markEmailAsReadAsync(id)); // ✅ mark as read in DB
+  const updatedIds = [...deletedIds, id];
+  setDeletedIds(updatedIds);
+  localStorage.setItem("deletedEmailIds", JSON.stringify(updatedIds));
+  toast.success("Email marked as read and removed from inbox");
+};
+
+
+const handleDeleteAllAndMarkRead = async () => {
+  const allVisibleIds = visibleEmails.map((email) => email._id);
+if (allVisibleIds.length === 0) {
+    toast.error("No emails to delete");
+    return; // Stop execution if no emails to delete
+  }
+  // mark all as read in DB
+  await Promise.all(allVisibleIds.map((id) => dispatch(markEmailAsReadAsync(id))));
+
+  const updatedIds = [...deletedIds, ...allVisibleIds];
+  setDeletedIds(updatedIds);
+  localStorage.setItem("deletedEmailIds", JSON.stringify(updatedIds));
+  toast.success("All emails marked as read and deleted");
+};
+
 
   // ✅ Mark email as read
   const handleMarkAsRead = (id) => {
@@ -70,19 +88,21 @@ const Inbox = () => {
 
   return (
     <div className="p-4">
-      <div className="mb-4 flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Inbox</h2>
-        {/* <button
-          onClick={() => {
-            localStorage.removeItem('deletedEmailIds');
-            setDeletedIds([]);
-            toast.success('Inbox restored!');
-          }}
-          className="text-sm bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-        >
-          Restore All Emails
-        </button> */}
-      </div>
+   <div className="mb-4 flex justify-between items-center">
+  <h2 className="text-xl font-semibold">Inbox</h2>
+  <div className="space-x-2">
+ <button
+  onClick={handleDeleteAllAndMarkRead}
+  className="text-sm bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+>
+  Delete All
+</button>
+
+    
+  </div>
+</div>
+
+      {/* 📨 Email List */}
 
       {visibleEmails.length === 0 ? (
         <p>No emails found.</p>
@@ -105,11 +125,11 @@ const Inbox = () => {
 
               {/* 🗑️ Delete Button */}
               <button
-                onClick={() => handleDeleteUIOnly(email._id)}
-                className="absolute top-2 right-2 text-sm bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-              >
-                Delete
-              </button>
+  onClick={() => handleDeleteAndMarkRead(email._id)}
+  className="absolute top-2 right-2 text-sm bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+>
+  Delete
+</button>
             </li>
           ))}
         </ul>

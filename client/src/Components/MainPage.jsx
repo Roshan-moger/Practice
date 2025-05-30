@@ -4,6 +4,7 @@ import { addMonthlySaving, setSelectedMonth } from '../features/Email/EmailSlice
 import { useEffect } from 'react';
 import ExpenseChart from './ExpenseChart/ExpenseChart';
 import ExpensePieChart from './ExpenseChart/ExpensePieChart';
+import RecentTransactions from './RecentTrancation/RecentTransactions';
 
 const MainPage = ({ user }) => {
   const dispatch = useDispatch();
@@ -119,6 +120,9 @@ const MainPage = ({ user }) => {
     </div>
   </div>
 </div>
+
+      {/* Recent Transactions */}
+      <RecentTransactions/>
     </div>
   );
 };

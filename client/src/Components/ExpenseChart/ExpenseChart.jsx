@@ -38,7 +38,7 @@ const ExpenseChart = () => {
           <CartesianGrid stroke="#000" strokeDasharray="4 4"  horizontal={false} vertical={true}  />
           <XAxis dataKey="name" stroke="#888" />
           <YAxis
-            domain={[0, view === 'weekly' ? 10000 : 25000]}
+            domain={[0, view === 'weekly' ? 7000 : 15000]}
             stroke="#888"
             tick={{ fontSize: 12 }}
           />
