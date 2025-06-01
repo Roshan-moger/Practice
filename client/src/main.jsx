@@ -8,12 +8,11 @@ import { Provider } from 'react-redux'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <Toaster
-  position="top-center"
-  reverseOrder={false}
-/>
+
 <Provider store={store}>
     <App />
+          <Toaster position="top-center" reverseOrder={false} />
+
     </Provider>
   </StrictMode>,
 )

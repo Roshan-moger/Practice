@@ -19,6 +19,15 @@ export const markEmailAsReadAsync = createAsyncThunk(
   }
 );
 
+export const updateEmailNoteAsync = createAsyncThunk(
+  'emails/updateNote',
+  async ({ emailId, note }) => {
+    const response = await axios.put(`http://localhost:5000/api/emails/${emailId}/note`, { note });
+    return response.data; // Updated email from backend
+  }
+);
+
+
 const emailSlice = createSlice({
   name: 'emails',
   initialState: {
@@ -99,7 +108,14 @@ const emailSlice = createSlice({
         if (idx !== -1) {
           state.data[idx] = updated;
         }
-      });
+      })
+         .addCase(updateEmailNoteAsync.fulfilled, (state, action) => {
+      const updatedEmail = action.payload;
+      const index = state.data.findIndex(e => e._id === updatedEmail._id);
+      if (index !== -1) {
+        state.data[index] = updatedEmail;
+      }
+    });;
   },
 });
 

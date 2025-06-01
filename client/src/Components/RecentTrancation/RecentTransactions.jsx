@@ -1,6 +1,10 @@
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useState } from 'react';
 import axios from 'axios';
+import { updateEmailNoteAsync } from '../../features/Email/EmailSlice';
+import toast from 'react-hot-toast';
+import { updateManualNoteAsync } from '../../features/manual/manualSlice';
+
 
 const extractAmountFromSubject = (subject) => {
   const match = subject.match(/(?:INR|₹)\s?([\d,]+\.\d{2}|\d+)/i);
@@ -23,29 +27,38 @@ const RecentTransactions = () => {
   const [currentTxn, setCurrentTxn] = useState(null);
   const [noteInput, setNoteInput] = useState('');
 
+    const dispatch = useDispatch();
+
   const handleEditClick = (txn) => {
     setCurrentTxn(txn);
     setNoteInput(txn.note || '');
     setModalOpen(true);
   };
 
-  const handleNoteSubmit = async () => {
-    if (!currentTxn) return;
+ const handleNoteSubmit = async () => {
+  if (!currentTxn) return;
 
-    try {
-      const endpoint =
-        currentTxn.source === 'manual'
-          ? `http://localhost:5000/api/manualtransactions/${currentTxn._id}`
-          : `http://localhost:5000/api/emails/${currentTxn._id}/note`;
-
-      await axios.put(endpoint, { note: noteInput });
-
-      currentTxn.note = noteInput; // Update locally to reflect immediately
-      setModalOpen(false);
-    } catch (err) {
-      console.error('Error updating note:', err);
+  try {
+    if (currentTxn.source === 'manual') {
+      await dispatch(updateManualNoteAsync({
+        manualId: currentTxn._id,
+        note: noteInput,
+      })).unwrap();
+    } else {
+      await dispatch(updateEmailNoteAsync({
+        emailId: currentTxn._id,
+        note: noteInput,
+      })).unwrap();
     }
-  };
+
+    currentTxn.note = noteInput; // Optimistic UI update
+    toast.success('Note updated successfully!');
+    setModalOpen(false);
+  } catch (err) {
+    console.error('Error updating note:', err);
+    toast.error('Failed to update note. Please try again.');
+  }
+};
 
   const formattedEmails = emails.map((email, idx) => ({
     _id: email._id || `email-${idx}`,
@@ -56,15 +69,20 @@ const RecentTransactions = () => {
     source: 'email',
   }));
 
+   // Format manual transactions
   const formattedManual = manual.map((txn, idx) => ({
     _id: txn._id || `manual-${idx}`,
     ...txn,
     source: 'manual',
   }));
-
-  const allTransactions = [...formattedEmails, ...formattedManual]
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 5);
+  // Combine and sort transactions  
+const allTransactions = [...formattedEmails, ...formattedManual].sort((a, b) => {
+  const dateA = new Date(a.date);
+  const dateB = new Date(b.date);
+  return dateB - dateA; // Most recent first
+}).slice(0, 7); // Limit to 10 most recent transactions
+// console.log('All Transactions (Before Sort):', [...formattedEmails, ...formattedManual]);
+// console.log('All Transactions (After Sort):', allTransactions);
 
   return (
     <div className="relative bg-white p-6 rounded-xl shadow-md w-full mt-6">
@@ -87,8 +105,15 @@ const RecentTransactions = () => {
               className="grid grid-cols-4 gap-4 items-center bg-gray-50 px-4 py-2 rounded-md"
             >
               <span className="text-gray-600 text-sm">
-                {new Date(txn.date).toLocaleString('en-IN')}
-              </span>
+{new Date(txn.date).toLocaleString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        hour12: true,
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })}              </span>
               <span
                 className={`text-sm font-semibold capitalize ${
                   txn.type === 'credited'

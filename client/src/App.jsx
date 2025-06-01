@@ -8,7 +8,8 @@ import Inbox from "./Components/Inbox";
 import MainPage from "./Components/MainPage";
 import { useDispatch } from "react-redux";
 import { fetchEmails } from "./features/Email/EmailSlice";
-import ManualTransactionForm from "./Components/ManualTransactionForm";
+import AddExpenses from "./Components/AddExpenses";
+import { fetchManualTransactions } from "./features/manual/manualSlice";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -18,7 +19,9 @@ const App = () => {
 
   useEffect(() => {
     dispatch(fetchEmails());
+    dispatch(fetchManualTransactions());
     const interval = setInterval(() => {
+        dispatch(fetchManualTransactions());
       dispatch(fetchEmails());
     }, 10000);
     return () => clearInterval(interval);
@@ -77,7 +80,9 @@ const App = () => {
         >
           <Route index element={<MainPage  user={user}  />} /> {/* Default content */}
           <Route path="inbox" element={<Inbox />} />
-          <Route path="addExpense" element={<ManualTransactionForm />} />
+          {/* <Route path="addExpense" element={<ManualTransactionForm />} /> */}
+                    <Route path="addExpense" element={<AddExpenses />} />
+
 
         </Route>
       </Routes>

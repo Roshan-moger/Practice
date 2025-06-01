@@ -19,6 +19,14 @@ export const fetchManualTransactions = createAsyncThunk(
   }
 );
 
+// Async thunk to update a manual transaction note
+export const updateManualNoteAsync = createAsyncThunk(
+  'manualTransaction/updateNote',
+  async ({ manualId, note }) => {
+    const response = await axios.put(`http://localhost:5000/api/manualtransactions/${manualId}`, { note });
+    return response.data; // Updated manual transaction
+  }
+);
 const manualTransactionSlice = createSlice({
   name: 'manualTransaction',
   initialState: {
@@ -43,7 +51,15 @@ const manualTransactionSlice = createSlice({
 
       .addCase(saveManualTransactionAsync.fulfilled, (state, action) => {
         state.data.unshift(action.payload); // Add new at top
-      });
+      })
+      .addCase(updateManualNoteAsync.fulfilled, (state, action) => {
+  const updated = action.payload;
+  const index = state.data.findIndex(txn => txn._id === updated._id);
+  if (index !== -1) {
+    state.data[index] = updated;
+  }
+});
+;
   },
 });
 
