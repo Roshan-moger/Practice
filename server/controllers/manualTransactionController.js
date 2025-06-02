@@ -59,3 +59,19 @@ exports.updateManualTransactionNote = async (req, res) => {
     res.status(500).json({ message: 'Server Error' });
   }
 };
+
+exports.deleteManualTransaction = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deletedTransaction = await ManualTransaction.findByIdAndDelete(id);
+
+    if (!deletedTransaction) {
+      return res.status(404).json({ message: 'Transaction not found' });
+    }
+
+    res.json({ message: 'Transaction deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+};

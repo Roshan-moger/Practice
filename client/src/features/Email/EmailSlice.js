@@ -51,14 +51,14 @@ const emailSlice = createSlice({
     setSelectedMonth: (state, action) => {
       state.selectedMonth = action.payload;
     },
-      addMonthlySaving: (state, action) => {
-    const { month, net } = action.payload;
+   addMonthlySaving: (state, action) => {
+  const { month, net } = action.payload;
 
-    if (!state.addedMonths.includes(month)) {
-      state.saving += net;
-      state.addedMonths.push(month);
-    }
-  },
+  if (!state.addedMonths.includes(month)) {
+    state.saving += net;
+    state.addedMonths.push(month);
+  }
+},
   },
 
   extraReducers: (builder) => {

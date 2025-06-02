@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import 'flowbite'; // Ensure this is installed via npm or yarn
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import { jwtDecode } from "jwt-decode";
@@ -7,9 +8,11 @@ import API from "./Components/utils/api";
 import Inbox from "./Components/Inbox";
 import MainPage from "./Components/MainPage";
 import { useDispatch } from "react-redux";
-import { fetchEmails } from "./features/Email/EmailSlice";
+import { fetchEmails } from "./features/Email/EmailSlice"
 import AddExpenses from "./Components/AddExpenses";
 import { fetchManualTransactions } from "./features/manual/manualSlice";
+import AllTransactions from "./Components/AllTransactions";
+import Reports from "./Components/Reports";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -81,7 +84,9 @@ const App = () => {
           <Route index element={<MainPage  user={user}  />} /> {/* Default content */}
           <Route path="inbox" element={<Inbox />} />
           {/* <Route path="addExpense" element={<ManualTransactionForm />} /> */}
-                    <Route path="addExpense" element={<AddExpenses />} />
+          <Route path="addExpense" element={<AddExpenses />} />
+          <Route path="transactions" element={<AllTransactions />} />
+          <Route path="reports" element={<Reports />} />
 
 
         </Route>

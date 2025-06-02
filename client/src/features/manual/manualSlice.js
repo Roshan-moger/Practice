@@ -1,16 +1,16 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-// Async thunk to save a manual transaction
+// Save a new manual transaction
 export const saveManualTransactionAsync = createAsyncThunk(
   'manualTransaction/save',
   async (transactionData) => {
     const response = await axios.post('http://localhost:5000/api/manualtransactions', transactionData);
-    return response.data; // saved transaction from backend
+    return response.data;
   }
 );
 
-// Async thunk to fetch all manual transactions
+// Fetch all manual transactions
 export const fetchManualTransactions = createAsyncThunk(
   'manualTransaction/fetchAll',
   async () => {
@@ -19,14 +19,24 @@ export const fetchManualTransactions = createAsyncThunk(
   }
 );
 
-// Async thunk to update a manual transaction note
+// Update a manual transaction note
 export const updateManualNoteAsync = createAsyncThunk(
   'manualTransaction/updateNote',
   async ({ manualId, note }) => {
     const response = await axios.put(`http://localhost:5000/api/manualtransactions/${manualId}`, { note });
-    return response.data; // Updated manual transaction
+    return response.data;
   }
 );
+
+// Delete a manual transaction
+export const deleteManualTransactionAsync = createAsyncThunk(
+  'manualTransaction/delete',
+  async (manualId) => {
+    await axios.delete(`http://localhost:5000/api/manualtransactions/${manualId}`);
+    return manualId;
+  }
+);
+
 const manualTransactionSlice = createSlice({
   name: 'manualTransaction',
   initialState: {
@@ -50,16 +60,21 @@ const manualTransactionSlice = createSlice({
       })
 
       .addCase(saveManualTransactionAsync.fulfilled, (state, action) => {
-        state.data.unshift(action.payload); // Add new at top
+        state.data.unshift(action.payload);
       })
+
       .addCase(updateManualNoteAsync.fulfilled, (state, action) => {
-  const updated = action.payload;
-  const index = state.data.findIndex(txn => txn._id === updated._id);
-  if (index !== -1) {
-    state.data[index] = updated;
-  }
-});
-;
+        const updated = action.payload;
+        const index = state.data.findIndex(txn => txn._id === updated._id);
+        if (index !== -1) {
+          state.data[index] = updated;
+        }
+      })
+
+      .addCase(deleteManualTransactionAsync.fulfilled, (state, action) => {
+        const deletedId = action.payload;
+        state.data = state.data.filter(txn => txn._id !== deletedId);
+      });
   },
 });
 

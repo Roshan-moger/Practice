@@ -1,6 +1,5 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { useState } from 'react';
-import axios from 'axios';
 import { updateEmailNoteAsync } from '../../features/Email/EmailSlice';
 import toast from 'react-hot-toast';
 import { updateManualNoteAsync } from '../../features/manual/manualSlice';
@@ -85,10 +84,10 @@ const allTransactions = [...formattedEmails, ...formattedManual].sort((a, b) => 
 // console.log('All Transactions (After Sort):', allTransactions);
 
   return (
-    <div className="relative bg-white p-6 rounded-xl shadow-md w-full mt-6">
+    <div className="relative p-6 rounded-xl  w-full mt-6">
       <h3 className="text-2xl font-semibold text-gray-800 mb-4">Recent Transactions</h3>
 
-      <div className="grid grid-cols-4 gap-4 px-4 py-2 bg-gray-100 rounded-md text-sm font-medium text-gray-700 mb-2">
+      <div className="grid grid-cols-4 gap-4 px-4 py-4  rounded-md text-sm font-medium text-white mb-2 text-center bg-[#8356D6]">
         <span>Date</span>
         <span>Type</span>
         <span>Amount</span>
@@ -98,11 +97,11 @@ const allTransactions = [...formattedEmails, ...formattedManual].sort((a, b) => 
       {allTransactions.length === 0 ? (
         <p className="text-gray-500 text-center py-4">No transactions available.</p>
       ) : (
-        <ul className="space-y-1">
+        <ul className="space-y-1 text-center">
           {allTransactions.map((txn) => (
             <li
               key={txn._id}
-              className="grid grid-cols-4 gap-4 items-center bg-gray-50 px-4 py-2 rounded-md"
+              className="grid grid-cols-4 gap-4 items-center bg-white px-4 py-3 rounded-md shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer"
             >
               <span className="text-gray-600 text-sm">
 {new Date(txn.date).toLocaleString('en-IN', {
@@ -136,16 +135,17 @@ const allTransactions = [...formattedEmails, ...formattedManual].sort((a, b) => 
               >
                 ₹{txn.amount.toFixed(2)}
               </span>
-              <span className="text-sm text-gray-700 flex items-center justify-between">
-                {txn.note || '—'}
-                <button
-                  className="ml-2 text-blue-500 hover:text-blue-700 text-xs cursor-pointer"
-                  onClick={() => handleEditClick(txn)}
-                  title="Edit note"
-                >
-                  ✏️
-                </button>
-              </span>
+            <span className="text-sm text-gray-700 relative w-full text-center">
+  {txn.note || '—'}
+  <button
+    className="absolute right-0 top-1/2 -translate-y-1/2 text-blue-500 hover:text-blue-700 text-xs cursor-pointer"
+    onClick={() => handleEditClick(txn)}
+    title="Edit note"
+  >
+    ✏️
+  </button>
+</span>
+
             </li>
           ))}
         </ul>

@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { selectFilteredEmails } from '../features/Email/EmailSelector';
+import { selectAllEmails, selectFilteredEmails } from '../features/Email/EmailSelector';
 import { addMonthlySaving, setSelectedMonth } from '../features/Email/EmailSlice';
 import { useEffect } from 'react';
 import ExpenseChart from './ExpenseChart/ExpenseChart';
@@ -13,29 +13,68 @@ const MainPage = ({ user }) => {
   const selectedMonth = useSelector(state => state.emails.selectedMonth);
   const saving = useSelector(state => state.emails.saving);
   const addedMonths = useSelector(state => state.emails.addedMonths);
+  const allEmails = useSelector(selectAllEmails); // includes manual + email data
 
   let income = 0;
   let expense = 0;
 
-  filteredEmails.forEach(email => {
-    const subject = email.subject.toLowerCase();
-    const amount = parseFloat(email.subject.match(/\b\d+(?:\.\d{1,2})?\b/)?.[0]);
+  filteredEmails.forEach(tx => {
+    let amount = 0;
+    let type = '';
+
+    if (typeof tx.subject === 'string') {
+      const subject = tx.subject.toLowerCase();
+      amount = parseFloat(subject.match(/\b\d+(?:\.\d{1,2})?\b/)?.[0]);
+      type = subject.includes("credited") ? "credited" : subject.includes("debited") ? "debited" : '';
+    } else if (tx.type && typeof tx.amount === 'number') {
+      amount = tx.amount;
+      type = tx.type.toLowerCase();
+    }
+
     if (!isNaN(amount)) {
-      if (subject.includes("credited")) income += amount;
-      else if (subject.includes("debited")) expense += amount;
+      if (type === "credited") income += amount;
+      else if (type === "debited") expense += amount;
     }
   });
 
   const net = income - expense;
 
   useEffect(() => {
-    if (!selectedMonth) return;
+    if (months.length === 0 || allEmails.length === 0) return;
 
-    // Dispatch to add monthly saving if not already added
-    if (!addedMonths.includes(selectedMonth)) {
-      dispatch(addMonthlySaving({ month: selectedMonth, net }));
-    }
-  }, [selectedMonth, net, addedMonths, dispatch]);
+    months.forEach((monthStr) => {
+      if (!addedMonths.includes(monthStr)) {
+        let income = 0;
+        let expense = 0;
+
+        const monthEmails = allEmails.filter(tx =>
+          tx.date?.startsWith(monthStr)
+        );
+
+        monthEmails.forEach(tx => {
+          let amount = 0;
+          let type = '';
+
+          if (typeof tx.subject === 'string') {
+            const subject = tx.subject.toLowerCase();
+            amount = parseFloat(subject.match(/\b\d+(?:\.\d{1,2})?\b/)?.[0]);
+            type = subject.includes("credited") ? "credited" : subject.includes("debited") ? "debited" : '';
+          } else if (tx.type && typeof tx.amount === 'number') {
+            amount = tx.amount;
+            type = tx.type.toLowerCase();
+          }
+
+          if (!isNaN(amount)) {
+            if (type === "credited") income += amount;
+            else if (type === "debited") expense += amount;
+          }
+        });
+
+        const net = income - expense;
+        dispatch(addMonthlySaving({ month: monthStr, net }));
+      }
+    });
+  }, [months, allEmails, addedMonths, dispatch]);
 
   return (
     <div className="p-4 space-y-6">
@@ -49,7 +88,7 @@ const MainPage = ({ user }) => {
             id="monthSelect"
             value={selectedMonth}
             onChange={e => dispatch(setSelectedMonth(e.target.value))}
-            className="px-2 py-1"
+            className="px-2 py-1 bg-white border border-gray-300 rounded-md shadow-sm hover:border-gray-400 focus:outline-none "
           >
             {months.map((monthStr) => {
               const [year, month] = monthStr.split("-");
@@ -63,66 +102,63 @@ const MainPage = ({ user }) => {
         </div>
       </div>
 
-      {/* Row 2: Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white shadow-lg rounded-lg p-4 flex">
-          <div className="w-[2px] bg-black rounded-l"></div>
+      {/* /* Row 2: Cards */ }
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-[#8356D6] shadow-lg rounded-lg p-4 flex">
+            <div className="w-[2px] bg-white rounded-l"></div>
+            <div className="pl-4 w-full">
+          <h3 className="text-sm text-white">Total Balance</h3>
+          <p className="text-white text-xl font-semibold mt-1">₹{net.toFixed(2)}</p>
+          <p className="text-xs text-right text-gray-300 mt-2">Available funds</p>
+            </div>
+        </div>
+
+        <div className="bg-[#8356D6] shadow-lg rounded-lg p-4 flex">
+          <div className="w-[2px] bg-white rounded-l"></div>
           <div className="pl-4 w-full">
-            <h3 className="text-sm text-gray-500">Total Balance</h3>
-            <p className="text-blue-600 text-xl font-semibold mt-1">₹{net.toFixed(2)}</p>
-            <p className="text-xs text-right text-gray-400 mt-2">Available funds</p>
+            <h3 className="text-sm text-white">Income</h3>
+            <p className="text-white text-xl font-semibold mt-1">₹{income.toFixed(2)}</p>
+            <p className="text-xs text-right text-gray-300 mt-2">This month</p>
           </div>
         </div>
 
-        <div className="bg-white shadow-lg rounded-lg p-4 flex">
-          <div className="w-[2px] bg-black rounded-l"></div>
+        <div className="bg-[#8356D6] shadow-lg rounded-lg p-4 flex">
+          <div className="w-[2px] bg-white rounded-l"></div>
           <div className="pl-4 w-full">
-            <h3 className="text-sm text-gray-500">Income</h3>
-            <p className="text-green-600 text-xl font-semibold mt-1">₹{income.toFixed(2)}</p>
-            <p className="text-xs text-right text-gray-400 mt-2">This month</p>
+            <h3 className="text-sm text-white">Expense</h3>
+            <p className="text-white text-xl font-semibold mt-1">₹{expense.toFixed(2)}</p>
+            <p className="text-xs text-right text-gray-300 mt-2">Spent</p>
           </div>
         </div>
 
-        <div className="bg-white shadow-lg rounded-lg p-4 flex">
-          <div className="w-[2px] bg-black rounded-l"></div>
+        {/* Saving Card */}
+        <div className="bg-[#8356D6] shadow-lg rounded-lg p-4 flex">
+          <div className="w-[2px] bg-white rounded-l"></div>
           <div className="pl-4 w-full">
-            <h3 className="text-sm text-gray-500">Expense</h3>
-            <p className="text-red-600 text-xl font-semibold mt-1">₹{expense.toFixed(2)}</p>
-            <p className="text-xs text-right text-gray-400 mt-2">Spent</p>
-          </div>
-        </div>
-
-        {/* New Saving Card */}
-        <div className="bg-white shadow-lg rounded-lg p-4 flex">
-          <div className="w-[2px] bg-black rounded-l"></div>
-          <div className="pl-4 w-full">
-            <h3 className="text-sm text-gray-500">Saving</h3>
-            <p className="text-purple-600 text-xl font-semibold mt-1">₹{saving.toFixed(2)}</p>
-            <p className="text-xs text-right text-gray-400 mt-2">Cumulative total</p>
+            <h3 className="text-sm text-white">Saving</h3>
+            <p className="text-white text-xl font-semibold mt-1">₹{saving.toFixed(2)}</p>
+            <p className="text-xs text-right text-gray-300 mt-2">Cumulative total</p>
           </div>
         </div>
       </div>
 
+      {/* Chart + Sidebar */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className="md:col-span-7 flex flex-col h-full">
+          <div className="flex-1">
+            <ExpenseChart />
+          </div>
+        </div>
 
-   {/* Main Grid Row for Chart + Sidebar */}
-<div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-  {/* Left Column */}
-  <div className="md:col-span-7 flex flex-col h-full">
-    <div className="flex-1">
-      <ExpenseChart />
-    </div>
-  </div>
-
-  {/* Right Column */}
-  <div className="md:col-span-5 flex flex-col h-full">
-    <div className="flex-1">
-      <ExpensePieChart />
-    </div>
-  </div>
-</div>
+        <div className="md:col-span-5 flex flex-col h-full">
+          <div className="flex-1">
+            <ExpensePieChart />
+          </div>
+        </div>
+      </div>
 
       {/* Recent Transactions */}
-      <RecentTransactions/>
+      <RecentTransactions />
     </div>
   );
 };

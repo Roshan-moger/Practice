@@ -1,7 +1,13 @@
 import { createSelector } from '@reduxjs/toolkit';
 
-export const selectAllEmails = state => state.emails.data;
+export const selectEmailsData = state => state.emails.data;
+export const selectManualTransactionsData = state => state.manualTransaction.data;
 export const selectSelectedMonth = state => state.emails.selectedMonth;
+
+export const selectAllEmails = createSelector(
+  [selectEmailsData, selectManualTransactionsData],
+  (emailsData, manualTransactionsData) => [...emailsData, ...manualTransactionsData]
+);
 
 export const selectFilteredEmails = createSelector(
   [selectAllEmails, selectSelectedMonth],

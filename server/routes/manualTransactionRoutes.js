@@ -10,4 +10,5 @@ router.post('/', manualTransactionController.addManualTransaction);
 
 router.put('/:id', manualTransactionController.updateManualTransactionNote);
 
+router.delete('/:id', manualTransactionController.deleteManualTransaction);
 module.exports = router;
