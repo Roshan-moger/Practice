@@ -60,11 +60,23 @@ const AllTransactions = () => {
       }
 
       currentTxn.note = noteInput; // Optimistic UI update
-      toast.success('Note updated successfully!');
+      toast.success('Note updated successfully!',{
+  style: {
+    background: '#343434', // Tailwind's emerald-600
+    color: '#EDEDED',
+    fontWeight: 'bold',
+  },
+});
       setModalOpen(false);
     } catch (err) {
       console.error('Error updating note:', err);
-      toast.error('Failed to update note. Please try again.');
+      toast.error('Failed to update note. Please try again.',{
+  style: {
+    background: '#343434',
+    color: '#EDEDED',
+    fontWeight: 'bold',
+  },
+});
     }
   };
 
@@ -75,12 +87,24 @@ const AllTransactions = () => {
       await dispatch(
         deleteManualTransactionAsync(currentTxn._id)
       ).unwrap();
-      toast.success('Transaction deleted successfully!');
+      toast.success('Transaction deleted successfully!',{
+  style: {
+    background: '#343434', // Tailwind's emerald-600
+    color: '#EDEDED',
+    fontWeight: 'bold',
+  },
+});
       setDeleteModalOpen(false);
       setCurrentTxn(null);
     } catch (err) {
       console.error('Error deleting transaction:', err);
-      toast.error('Failed to delete transaction. Please try again.');
+      toast.error('Failed to delete transaction. Please try again.',{
+  style: {
+    background: '#343434',
+    color: '#EDEDED',
+    fontWeight: 'bold',
+  },
+});
     }
   };
 
@@ -104,7 +128,7 @@ const AllTransactions = () => {
   );
 
   return (
-    <div className="relative min-h-screen bg-gray-100 p-6 overflow-hidden">
+    <div className="relative min-h-screen  p-6 overflow-hidden">
       {/* Background Animation */}
 
       {/* Transactions Container */}
@@ -195,7 +219,7 @@ const AllTransactions = () => {
 
         {/* Edit Note Modal */}
         {modalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+<div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-95 animate-modal-in">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">
                 Add/Edit Note
@@ -206,6 +230,7 @@ const AllTransactions = () => {
                 value={noteInput}
                 onChange={(e) => setNoteInput(e.target.value)}
                 placeholder="Enter note"
+             
               />
               <div className="flex justify-end gap-3 mt-4">
                 <button
@@ -215,7 +240,7 @@ const AllTransactions = () => {
                   Cancel
                 </button>
                 <button
-                  className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200"
+                  className="px-4 py-2 bg-[#8356D6]  text-white rounded-lg"
                   onClick={handleNoteSubmit}
                 >
                   Save Note
@@ -227,7 +252,7 @@ const AllTransactions = () => {
 
         {/* Delete Confirmation Modal */}
         {deleteModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+<div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-md transform transition-all duration-300 scale-95 animate-modal-in">
               <h2 className="text-xl font-semibold text-gray-800 mb-4">
                 Delete Transaction

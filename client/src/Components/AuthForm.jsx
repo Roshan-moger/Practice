@@ -13,21 +13,40 @@ const handleSubmit = async (e) => {
 
   // Basic validation
   if (!form.email || !form.password || (!isLogin && !form.name)) {
-    toast.error('Please fill in all required fields');
+    toast.error('Please fill in all required fields',{
+  style: {
+    background: '#343434', // Tailwind's emerald-600
+    color: '#EDEDED',
+    fontWeight: 'bold',
+  },
+});
     return;
   }
 
   try {
     const endpoint = isLogin ? 'login' : 'register';
     const { data } = await API.post(`/auth/${endpoint}`, form);
+    // console.log(data);
     localStorage.setItem('token', data.token);
-    toast.success(`${isLogin ? 'Logged in' : 'Registered'} successfully!`);
+    toast.success(`${isLogin ? `Welcome back ${data.name}` : `Welcome ${data.name}`}`,{
+  style: {
+    background: '#343434', // Tailwind's emerald-600
+    color: '#EDEDED',
+    fontWeight: 'bold',
+  },
+});
     onAuth(data);
   } catch (err) {
     const msg =
       err.response?.data?.message ||
       (isLogin ? 'Invalid email or password' : 'Registration failed');
-    toast.error(msg);
+    toast.error(msg,{
+  style: {
+    background: '#343434', // Tailwind's emerald-600
+    color: '#EDEDED',
+    fontWeight: 'bold',
+  },
+});
   }
 };
 
@@ -58,14 +77,14 @@ const handleSubmit = async (e) => {
           value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
         />
-        <button className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+        <button className="w-full bg-[#8356D6] text-white py-2 rounded hover:bg-[#6f4c9a]">
           {isLogin ? 'Login' : 'Register'}
         </button>
       </form>
       <p className="mt-4 text-sm text-center">
         {isLogin ? "Don't have an account?" : 'Already have an account?'}
         <button
-          className="ml-1 text-blue-600 underline"
+          className="ml-1 text-blue-600 underline cursor-pointer"
           onClick={() => setIsLogin(!isLogin)}
         >
           {isLogin ? 'Register' : 'Login'}

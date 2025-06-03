@@ -8,7 +8,6 @@ const ExpensePieChart = () => {
   const chartRef = useRef(null);
   const chartInstanceRef = useRef(null);
 
-  // Calculate totals
   let totalIncome = 0;
   let totalExpense = 0;
 
@@ -18,7 +17,8 @@ const ExpensePieChart = () => {
 
     if (typeof tx.subject === 'string') {
       const subject = tx.subject.toLowerCase();
-      amount = parseFloat(subject.match(/\b\d+(?:\.\d{1,2})?\b/)?.[0]);
+      const match = subject.match(/\b\d+(?:\.\d{1,2})?\b/);
+      amount = match ? parseFloat(match[0]) : 0;
       if (subject.includes('debited')) type = 'debited';
       else if (subject.includes('credited')) type = 'credited';
     } else if (tx.type && typeof tx.amount === 'number') {
@@ -34,101 +34,101 @@ const ExpensePieChart = () => {
 
   const totalSavings = totalIncome - totalExpense;
 
-  const chartConfig = {
-    type: 'doughnut',
-    data: {
-      labels: ['Expense', 'Income', 'Savings'],
-      datasets: [
-        {
-          data: [totalExpense, totalIncome, totalSavings],
-          backgroundColor: ['#000', '#8356D6', '#ECECEC'],
-          borderWidth: 2,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '50%',
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#333',
-          titleColor: '#fff',
-          bodyColor: '#fff',
-          borderColor: '#666',
-          borderWidth: 1,
-        },
-      },
-    },
-    plugins: [
-      {
-        id: 'customRadii',
-        beforeDraw(chart) {
-          const { chartArea } = chart;
-          const { width, height } = chartArea;
-          const maxRadius = Math.min(width, height) / 2;
-          const radii = [maxRadius * 0.85, maxRadius * 0.82, maxRadius * 0.8];
-          const meta = chart.getDatasetMeta(0);
-          meta.data.forEach((arc, index) => {
-            arc.outerRadius = radii[index];
-          });
-        },
-      },
-      {
-        id: 'centerText',
-        afterDraw(chart) {
-          const { ctx, width, height } = chart;
-          ctx.save();
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.font = '16px bold';
-          ctx.fillStyle = '#16A34A';
-          ctx.fillText(`₹${totalSavings.toFixed(0)}`, width / 2, height / 2);
-          ctx.restore();
-        },
-      },
-      {
-        id: 'percentageLabels',
-        afterDraw(chart) {
-          const { ctx } = chart;
-          const meta = chart.getDatasetMeta(0);
-          const dataset = chart.data.datasets[0];
-
-          // Calculate total of Expense + Income (exclude savings for percentage)
-          const total = dataset.data[0] + dataset.data[1];
-          if (total === 0) return;
-
-          ctx.save();
-          ctx.fillStyle = '#fff';
-          ctx.font = '12px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-
-          // Expense slice (index 0)
-          const expenseArc = meta.data[0];
-          const expensePercent = ((dataset.data[0] / total) * 100).toFixed(1) + '%';
-          const expenseCenter = expenseArc.getCenterPoint();
-          ctx.fillText(expensePercent, expenseCenter.x, expenseCenter.y);
-
-          // Income slice (index 1)
-          const incomeArc = meta.data[1];
-          const incomePercent = ((dataset.data[1] / total) * 100).toFixed(1) + '%';
-          const incomeCenter = incomeArc.getCenterPoint();
-          ctx.fillText(incomePercent, incomeCenter.x, incomeCenter.y);
-
-          ctx.restore();
-        },
-      },
-    ],
-  };
-
   useEffect(() => {
-    if (chartRef.current) {
+    const ctx = chartRef.current;
+
+    if (ctx) {
       if (chartInstanceRef.current) {
         chartInstanceRef.current.destroy();
       }
-      chartInstanceRef.current = new Chart(chartRef.current, chartConfig);
+
+      chartInstanceRef.current = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Expense', 'Income', 'Savings'],
+          datasets: [
+            {
+              data: [totalExpense, totalIncome, totalSavings],
+              backgroundColor: ['#000', '#8356D6', '#ECECEC'],
+              borderWidth: 2,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '50%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#333',
+              titleColor: '#fff',
+              bodyColor: '#fff',
+              borderColor: '#666',
+              borderWidth: 1,
+            },
+          },
+        },
+        plugins: [
+          {
+            id: 'customRadii',
+            beforeDraw(chart) {
+              const { chartArea } = chart;
+              const { width, height } = chartArea;
+              const maxRadius = Math.min(width, height) / 2;
+              const radii = [maxRadius * 0.85, maxRadius * 0.82, maxRadius * 0.8];
+              const meta = chart.getDatasetMeta(0);
+              meta.data.forEach((arc, index) => {
+                arc.outerRadius = radii[index];
+              });
+            },
+          },
+          {
+            id: 'centerText',
+            afterDraw(chart) {
+              const { ctx, width, height } = chart;
+              ctx.save();
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.font = 'bold 16px sans-serif';
+              ctx.fillStyle = '#16A34A';
+              ctx.fillText(`₹${totalSavings.toFixed(0)}`, width / 2, height / 2);
+              ctx.restore();
+            },
+          },
+          {
+            id: 'percentageLabels',
+            afterDraw(chart) {
+              const { ctx } = chart;
+              const meta = chart.getDatasetMeta(0);
+              const dataset = chart.data.datasets[0];
+
+              const total = dataset.data[0] + dataset.data[1];
+              if (total === 0) return;
+
+              ctx.save();
+              ctx.fillStyle = '#fff';
+              ctx.font = '12px sans-serif';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+
+              // Expense
+              const expenseArc = meta.data[0];
+              const expensePercent = ((dataset.data[0] / total) * 100).toFixed(1) + '%';
+              const expenseCenter = expenseArc.getCenterPoint();
+              ctx.fillText(expensePercent, expenseCenter.x, expenseCenter.y);
+
+              // Income
+              const incomeArc = meta.data[1];
+              const incomePercent = ((dataset.data[1] / total) * 100).toFixed(1) + '%';
+              const incomeCenter = incomeArc.getCenterPoint();
+              ctx.fillText(incomePercent, incomeCenter.x, incomeCenter.y);
+
+              ctx.restore();
+            },
+          },
+        ],
+      });
     }
 
     return () => {
@@ -139,9 +139,11 @@ const ExpensePieChart = () => {
     };
   }, [totalIncome, totalExpense, totalSavings]);
 
-  return (
-    <div className="bg-white rounded shadow-md p-6 flex items-center justify-between mt-6 border border-gray-100">
-      <div className="relative w-3/4" style={{ height: '240px', width:"240px" }}>
+return (
+  <div className="bg-white rounded shadow-md p-6 mt-6 border border-gray-100">
+    <h2 className="text-xl font-bold text-gray-800 mb-4">Expense Overview</h2>
+    <div className="flex h-[16rem] items-center justify-between">
+      <div className="relative w-3/4" style={{ height: '240px', width: '240px' }}>
         <canvas ref={chartRef} />
       </div>
 
@@ -160,7 +162,9 @@ const ExpensePieChart = () => {
         </div>
       </div>
     </div>
-  );
+  </div>
+);
+
 };
 
 export default ExpensePieChart;

@@ -33,7 +33,14 @@ const AddExpenses = () => {
         date: isoDate,
       })
     ).then(() => {
-      toast.success('Expense added successfully!');
+      toast.success('Expense added successfully!',{
+  style: {
+    background: '#343434', // Tailwind's emerald-600
+    color: '#EDEDED',
+    fontWeight: 'bold',
+  },
+});
+    
       setAmount('');
       setNote('');
       setDate(getLocalDateTime());

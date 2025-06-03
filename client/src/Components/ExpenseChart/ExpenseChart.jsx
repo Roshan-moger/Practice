@@ -22,7 +22,7 @@ const ExpenseChart = () => {
       : groupExpensesByMonth(allEmails);
 
   return (
-    <div className="bg-white p-6 rounded shadow-md mt-6 border border-gray-100">
+    <div className="bg-white p-6 rounded shadow-md mt-6 border border-gray-100 h-3.5/4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold text-gray-700">Spending Overview</h2>
         <select

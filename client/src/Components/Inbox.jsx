@@ -20,20 +20,38 @@ const Inbox = () => {
     const updatedIds = [...deletedIds, id];
     setDeletedIds(updatedIds);
     localStorage.setItem('deletedEmailIds', JSON.stringify(updatedIds));
-    toast.success('Email marked as read and removed from inbox');
+    toast.success('Email removed from inbox', {
+      style: {
+        background: '#343434',
+        color: '#EDEDED',
+        fontWeight: 'bold',
+      },
+    });
   };
 
   const handleDeleteAllAndMarkRead = async () => {
     const allVisibleIds = visibleEmails.map((email) => email._id);
     if (allVisibleIds.length === 0) {
-      toast.error('No emails to delete');
+      toast.error('No emails to delete',{
+      style: {
+        background: '#343434',
+        color: '#EDEDED',
+        fontWeight: 'bold',
+      },
+    });
       return;
     }
     await Promise.all(allVisibleIds.map((id) => dispatch(markEmailAsReadAsync(id))));
     const updatedIds = [...deletedIds, ...allVisibleIds];
     setDeletedIds(updatedIds);
     localStorage.setItem('deletedEmailIds', JSON.stringify(updatedIds));
-    toast.success('All emails marked as read and deleted');
+    toast.success('All emails marked as read and deleted',{
+      style: {
+        background: '#343434',
+        color: '#EDEDED',
+        fontWeight: 'bold',
+      },
+    });
   };
 
   const handleMarkAsRead = (id) => {
@@ -48,7 +66,6 @@ const Inbox = () => {
     return (
       <div className="relative min-h-screen flex items-center justify-center bg-gray-100 overflow-hidden">
         {/* Background Animation */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 animate-gradient opacity-30"></div>
         <div className="relative z-10 bg-white bg-opacity-80 backdrop-blur-md p-8 rounded-xl shadow-2xl max-w-md text-center">
           <FlagIcon className="w-16 h-16 mx-auto text-red-500" />
           <Typography
@@ -64,7 +81,7 @@ const Inbox = () => {
           <Button
             color="gray"
             className="mt-6 w-full md:w-32 bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 transition-all duration-200"
-            onClick={() => window.location.href = '/'}
+            onClick={() => window.location.href = '/dashboard'}
           >
             Back Home
           </Button>
